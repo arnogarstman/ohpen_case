@@ -9,24 +9,29 @@ sources:
         description: "Raw transactions table"
         columns:
           - name: ID
+            data_type: int
             tests:
               - not_null
               - unique:
                   config:
                     severity: warn
+
           - name: ACCOUNT_ID
+            data_type: varchar(100)
             tests:
               - not_null
 
           - name: AMOUNT
+            data_type: numeric(16,2)
             tests:
               - not_null
       
           - name: NEW_BALANCE
+            data_type: numeric(16,2)
             tests:
               - not_null
 
           - name: TX_DATE
+            data_type: timestamp
             tests:
               - not_null
-
