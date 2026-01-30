@@ -1,0 +1,32 @@
+version: 2
+
+sources:
+  - name: raw
+    database: ANALYTICS
+    schema: DBT_AGARSTMAN
+    tables:
+      - name: transactions
+        description: "Raw transactions table"
+        columns:
+          - name: ID
+            tests:
+              - not_null
+              - unique:
+                  config:
+                    severity: warn
+          - name: ACCOUNT_ID
+            tests:
+              - not_null
+
+          - name: AMOUNT
+            tests:
+              - not_null
+      
+          - name: NEW_BALANCE
+            tests:
+              - not_null
+
+          - name: TX_DATE
+            tests:
+              - not_null
+
