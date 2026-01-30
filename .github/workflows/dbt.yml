@@ -33,7 +33,7 @@ jobs:
         run: |
           mkdir -p "$DBT_PROFILES_DIR"
           cat > "$DBT_PROFILES_DIR/profiles.yml" << 'EOF'
-          default:
+          ohpen:
             target: ci
             outputs:
               ci:
