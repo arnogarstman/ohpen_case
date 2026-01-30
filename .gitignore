@@ -12,3 +12,4 @@ __pycache__/
 # Secrets
 profiles.yml
 .env
+dbt_internal_packages/
