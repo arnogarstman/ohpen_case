@@ -1,4 +1,4 @@
-name: dbt CI
+name: dbt CI/CD
 
 on:
   pull_request:
@@ -34,7 +34,6 @@ jobs:
           mkdir -p "$DBT_PROFILES_DIR"
           cat > "$DBT_PROFILES_DIR/profiles.yml" << 'EOF'
           ohpen:
-            target: ci
             outputs:
               ci:
                 type: snowflake
@@ -46,6 +45,17 @@ jobs:
                 warehouse: "{{ env_var('DBT_SNOWFLAKE_WAREHOUSE') }}"
                 schema: CI
                 threads: 4
+
+              prod:
+                type: snowflake
+                account: "{{ env_var('DBT_SNOWFLAKE_ACCOUNT') }}"
+                user: "{{ env_var('DBT_SNOWFLAKE_USER') }}"
+                password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
+                role: "{{ env_var('DBT_SNOWFLAKE_ROLE') }}"
+                database: "{{ env_var('DBT_SNOWFLAKE_DATABASE') }}"
+                warehouse: "{{ env_var('DBT_SNOWFLAKE_WAREHOUSE') }}"
+                schema: ANALYTICS
+                threads: 8
           EOF
 
       - name: Install dbt dependencies
@@ -53,13 +63,16 @@ jobs:
           DBT_PROFILES_DIR: /home/runner/.dbt
         run: dbt deps
 
-      - name: Run dbt build
+      # ---- CI ----
+      - name: Run dbt build (CI)
+        if: github.event_name == 'pull_request'
         env:
           DBT_PROFILES_DIR: /home/runner/.dbt
-          DBT_SNOWFLAKE_ACCOUNT: ${{ secrets.DBT_SNOWFLAKE_ACCOUNT }}
-          DBT_SNOWFLAKE_USER: ${{ secrets.DBT_SNOWFLAKE_USER }}
-          DBT_SNOWFLAKE_PASSWORD: ${{ secrets.DBT_SNOWFLAKE_PASSWORD }}
-          DBT_SNOWFLAKE_ROLE: ${{ secrets.DBT_SNOWFLAKE_ROLE }}
-          DBT_SNOWFLAKE_DATABASE: ${{ secrets.DBT_SNOWFLAKE_DATABASE }}
-          DBT_SNOWFLAKE_WAREHOUSE: ${{ secrets.DBT_SNOWFLAKE_WAREHOUSE }}
         run: dbt build --target ci
+
+      # ---- CD ----
+      - name: Run dbt build (PROD)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          DBT_PROFILES_DIR: /home/runner/.dbt
+        run: dbt build --target prod
